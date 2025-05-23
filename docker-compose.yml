@@ -1,0 +1,70 @@
+version: "2"
+services:
+  customer:
+    build: 
+      context: ./customer
+      dockerfile: Dockerfile
+    env_file: .env
+    depends_on:
+      - postgres
+    ports:
+      - "8082:8082"
+    restart: always
+    networks: 
+      default: 
+
+  product:
+    build:
+      context: ./product
+      dockerfile: Dockerfile
+    env_file: .env
+    depends_on:
+      - postgres
+      - customer
+    ports:
+      - "8081:8081"
+    restart: always
+    networks: 
+      default:
+  cart:
+    build:
+      context: ./cart
+      dockerfile: Dockerfile
+    env_file: .env
+    depends_on:
+      - postgres
+      - customer
+      - product
+    ports:
+      - "8080:8080"
+    restart: always
+    networks: 
+      default:
+  # database:
+  #   # build: ./database
+  #   image: 'postgres:14.2'
+  #   environment:
+  #     - POSTGRES_PASSWORD="password"
+  #   volumes:
+  #   - .data:/data
+  #   ports:
+  #     - "5432:5432"
+  #   env_file:
+  #     - .env
+  postgres:
+    image: 'postgres:14.2'
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    restart: always
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      POSTGRES_USER: mansi
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: shopping_mall
+    volumes:
+      - ./db-data/postgres/:/var/lib/postgresql  
+networks:
+  default: 
